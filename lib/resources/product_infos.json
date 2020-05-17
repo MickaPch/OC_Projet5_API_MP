@@ -1,0 +1,21 @@
+{
+    "url": "url",
+    "quantity": "quantity",
+    "brand": "brands",
+    "country": "countries_lc",
+    "stores": "stores",
+    "nutrition_score": "nutriscore_score",
+    "nutriscore": "nutrition_grade_fr",
+    "ingredients": "ingredients_text",
+    "nutriments": {
+        "energy_kcal": "energy-kcal_100g",
+        "fat": "fat_100g",
+        "satured_fat": "saturated-fat_100g",
+        "carbohydrates": "carbohydrates_100g",
+        "sugar": "sugars_100g",
+        "fibers": "fiber_100g",
+        "proteins": "proteins_100g",
+        "salt": "salt_100g",
+        "sodium": "sodium_100g"
+    }
+}

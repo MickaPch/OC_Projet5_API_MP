@@ -1,0 +1,50 @@
+{
+    "appMessages": {
+        "separator": "----------------------------------------",
+        "welcome": "\n========================================\n========================================\n        YAKA        \n========================================\n========================================\n\nWelcome to Yaka app.\n\n -Enter- to continue\n",
+        "mainMenu": "                  MAIN MENU                  \n\nPlease enter the corresponding number :\n",
+        "connection": {
+            "default": "\nDefault connection settings in 'settings.py' are :\n",
+            "confirmation": "\nDo you want to use this settings ?",
+            "connectionMsg": "Try to connect ...",
+            "changeSettings": "Please enter the setting you want to use :\n"
+        },
+        "inputYN": "    [Yes or No]\n  >>>  ",
+        "registration": "Product registered into database",
+        "textSearch": "\nType text to search for matching products :  >>>  "
+    },
+    "appChoices": {
+        "mainMenu": [
+            "Show categories list",
+            "Search for a product by text",
+            "Show registered search requests"
+        ],
+        "returnToMenu": [
+            "Return to main menu"
+        ],
+        "productDetails": [
+            "Show more informations of this product"
+        ],
+        "compareBetter": [
+            "Compare this product with another better product"
+        ],
+        "saveProduct": [
+            "Save this product into database"
+        ],
+        "productComparison": [
+            "Save this products comparison into database",
+            "Compare with another product"
+        ],
+        "noAlternative": [
+            "Save this product into database",
+            "Choose another product"
+        ],
+        "exit": [
+            "Exit"
+        ],
+        "registeredMenu": [
+            "Show list of registered products",
+            "Show list of registered comparisons"
+        ]
+    }
+}

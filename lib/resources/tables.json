@@ -1,0 +1,232 @@
+{
+    "products": [
+        {
+            "field": "code",
+            "type": "varchar",
+            "len": 250,
+            "null": false,
+            "pk": true
+        },
+        {
+            "field": "name",
+            "type": "varchar",
+            "len": 250,
+            "null": false,
+            "pk": false
+        },
+        {
+            "field": "url",
+            "type": "varchar",
+            "len": 250,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "quantity", 
+            "type": "varchar",
+            "len": 250,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "brand", 
+            "type": "varchar",
+            "len": 250,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "country", 
+            "type": "varchar",
+            "len": 250,
+            "null": false,
+            "pk": false
+        },
+        {
+            "field": "stores", 
+            "type": "varchar",
+            "len": 250,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "ingredients", 
+            "type": "varchar",
+            "len": 5000,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "energy_kcal", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "fat", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "satured_fat", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "carbohydrates", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "sugar", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "fibers", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "proteins", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "salt", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "sodium", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "nutrition_score", 
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false
+        },
+        {
+            "field": "nutriscore", 
+            "type": "varchar",
+            "len": 1,
+            "null": true,
+            "pk": false
+        }
+    ],
+    "categories": [
+        {
+            "field": "id",
+            "type": "int",
+            "len": 10,
+            "null": false,
+            "pk": true
+        },
+        {
+            "field": "name",
+            "type": "varchar",
+            "len": 250,
+            "null": false,
+            "pk": false
+        },
+        {
+            "field": "parent_id",
+            "type": "int",
+            "len": 10,
+            "null": true,
+            "pk": false,
+            "fk": {
+                "table": "categories",
+                "field": "id"
+            }
+        }
+    ],
+    "cat_prod_connections" : [
+        {
+            "field": "id",
+            "type": "int",
+            "len": 10,
+            "null": false,
+            "pk": true
+        },
+        {
+            "field": "product_id",
+            "type": "varchar",
+            "len": 250,
+            "null": false,
+            "pk": false,
+            "fk": {
+                "table": "products",
+                "field": "code"
+            }
+        },
+        {
+            "field": "category_id",
+            "type": "int",
+            "len": 10,
+            "null": false,
+            "pk": false,
+            "fk": {
+                "table": "categories",
+                "field": "id"
+            }
+        }
+    ],
+    "registrations": [
+        {
+            "field": "id",
+            "type": "int",
+            "len": 10,
+            "null": false,
+            "pk": true
+        },
+        {
+            "field": "product",
+            "type": "varchar",
+            "len": 250,
+            "null": false,
+            "pk": false,
+            "fk": {
+                "table": "products",
+                "field": "code"
+            }
+        },
+        {
+            "field": "compared_product",
+            "type": "varchar",
+            "len": 250,
+            "null": true,
+            "pk": false,
+            "fk": {
+                "table": "products",
+                "field": "code"
+            }
+        },
+        {
+            "field": "search_date",
+            "type": "date",
+            "null": false,
+            "pk": false
+        }
+    ]
+}
