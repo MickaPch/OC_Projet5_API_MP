@@ -1,8 +1,10 @@
-import requests
+"""Product importation and retrieve a product for show its informations"""
 from tabulate import tabulate
 
-from classes.category import Category
-from classes.utils import Statics
+from app.classes.category import Category
+from app.utils.methods import Statics
+
+from app.utils.requests import SELECT_PROD_BY_CODE, INSERT_PROD, SELECT_ALTERNATIVE
 
 
 class ProductImportation():
@@ -17,9 +19,11 @@ class ProductImportation():
 
         self.code = product['code']
 
-        nb_prod = cursor.execute("""SELECT * FROM `products` WHERE `code` = "{}" """.format(
-            self.code
-        ))
+        nb_prod = cursor.execute(
+            SELECT_PROD_BY_CODE.format(
+                self.code
+            )
+        )
         if nb_prod == 0:
             # Check if country,
             # categories language
@@ -52,7 +56,7 @@ class ProductImportation():
             'name': self.product['product_name'],
         }
 
-        product_infos = Statics.json_dict('./lib/resources/product_infos.json')
+        product_infos = Statics.json_dict('./app/utils/json/product_infos.json')
 
         for product_field, product_value_name in product_infos.items():
             if not isinstance(product_value_name, dict):
@@ -71,18 +75,18 @@ class ProductImportation():
         for field_name, value in product_values.items():
             fields.append(field_name)
             values.append('"' + str(value) + '"')
-        
-        request_str = '''INSERT INTO products ({}) VALUES ({});'''.format(
-            ', '.join(fields),
-            ', '.join(values)
-        )
 
-        cursor.execute(request_str)
+        cursor.execute(
+            INSERT_PROD.format(
+                ', '.join(fields),
+                ', '.join(values)
+            )
+        )
         mydb.commit()
 
         # Import categories in DB
         self.categories(mydb)
-    
+
         return product_values['name']
 
 
@@ -105,43 +109,43 @@ Create relation instance in db."""
 
 class ProductGet():
     """
-Search for a product in db with its code.
-Return its informations."""
-    
+    Search for a product in db with its code.
+    Return its informations.
+    """
+
     def __init__(self, db_object, code):
         """Initialization of ProductGet.
 Information retrieval."""
 
         cursor = db_object.cursor
 
-        product_req = """
-    SELECT *
-    FROM `products`
-    WHERE `code`="{}";
-    """.format(code)
-        cursor.execute(product_req)
+        cursor.execute(
+            SELECT_PROD_BY_CODE.format(code)
+        )
 
         row = cursor.fetchone()
-        
+
         self.code = row[0]
         self.name = row[1]
         self.url = row[2]
-        self.quantity = row[3]
-        self.brand = row[4]
-        self.country = row[5]
-        self.stores = row[6]
-        self.ingredients = row[7]
-        self.energy = row[8]
-        self.fat = row[9]
-        self.satured_fat = row[10]
-        self.carbohydrates = row[11]
-        self.sugar = row[12]
-        self.fibers = row[13]
-        self.proteins = row[14]
-        self.salt = row[15]
-        self.sodium = row[16]
-        self.nutrition_score = row[17]
-        self.nutriscore = row[18]
+        self.informations = {
+            "quantity": row[3],
+            "brand": row[4],
+            "country": row[5],
+            "stores": row[6],
+            "ingredients": row[7],
+            "energy": row[8],
+            "fat": row[9],
+            "satured_fat": row[10],
+            "carbohydrates": row[11],
+            "sugar": row[12],
+            "fibers": row[13],
+            "proteins": row[14],
+            "salt": row[15],
+            "sodium": row[16],
+            "nutrition_score": row[17],
+            "nutriscore": row[18]
+        }
 
         print(self)
 
@@ -150,12 +154,12 @@ Information retrieval."""
         """Redefinition of __repr__ function to display product informations."""
 
 
-        name = self.name + ' - ' + self.brand
+        name = self.name + ' - ' + self.informations['brand']
 
         underline = "".join(["-" for letter in name])
 
         nutriscore = "Nutriscore :  {}".format(
-            self.nutriscore.upper()
+            self.informations['nutriscore'].upper()
         ).center(100)
 
         product_infos = """
@@ -172,11 +176,11 @@ Ingredients:    {ingredients}
 """.format(
     name=name.center(100),
     underl=underline.center(100),
-    url = self.url,
-    qt=self.quantity,
+    url=self.url,
+    qt=self.informations['quantity'],
     nutriscore=nutriscore,
-    stores=self.stores,
-    ingredients=self.ingredients
+    stores=self.informations['stores'],
+    ingredients=self.informations['ingredients']
 )
 
         return product_infos
@@ -211,19 +215,19 @@ Ingredients:    {ingredients}
         title = self.name + '\n(g for 100 g / ml for 100 ml)'
 
         product_infos = [
-            self.brand,
-            self.quantity,
-            self.nutriscore.upper(),
-            self.energy,
-            self.fat,
-            self.satured_fat,
-            self.carbohydrates,
-            self.sugar,
-            self.fibers,
-            self.proteins,
-            self.salt,
-            self.sodium,
-            self.nutrition_score
+            self.informations['brand'],
+            self.informations['quantity'],
+            self.informations['nutriscore'].upper(),
+            self.informations['energy'],
+            self.informations['fat'],
+            self.informations['satured_fat'],
+            self.informations['carbohydrates'],
+            self.informations['sugar'],
+            self.informations['fibers'],
+            self.informations['proteins'],
+            self.informations['salt'],
+            self.informations['sodium'],
+            self.informations['nutrition_score']
         ]
 
         return title, product_infos
@@ -250,8 +254,6 @@ Show the table."""
                     title_2, product_infos_2 = compared_product.product_infos()
                     headers.append(title_2)
                 table[i].append(product_infos_2[i])
-                
-
             i += 1
 
         print(tabulate(table, headers, tablefmt="grid"))
@@ -262,38 +264,26 @@ Show the table."""
         """
 Return a list of alternative products.
 Compare products where have the same selected category."""
-        
+
         cursor = db_object.mydb.cursor()
 
-        str_request = """
-        SELECT `code`, `name`
-        FROM `products`
-        INNER JOIN `cat_prod_connections`
-            WHERE
-                products.code = cat_prod_connections.product_id
-                AND category_id = {}
-                AND products.nutriscore < "{}"
-                AND products.code != {}
-        """.format(
-            category_id,
-            self.nutriscore,
-            self.code
+        nb_products = cursor.execute(
+            SELECT_ALTERNATIVE.format(
+                category_id,
+                self.informations['nutriscore'],
+                self.code
+            )
         )
-
-        nb_products = cursor.execute(str_request)
 
         if nb_products > 0:
             list_codes = []
             for row in cursor:
                 list_codes.append(row[0])
-            
             alternative = True
-
-            return list_codes, alternative
 
         else:
 
             list_codes = []
             alternative = False
 
-            return list_codes, alternative
+        return list_codes, alternative

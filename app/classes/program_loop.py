@@ -1,5 +1,12 @@
-from classes.utils import Statics
-from classes.product import ProductGet
+"""Program loop with menu options"""
+import sys
+
+from app.utils.methods import Statics
+from app.classes.product import ProductGet
+
+from app.utils.requests import SELECT_PROD_TEXT, SELECT_CAT_BY_PROD
+from app.utils.requests import INSERT_REGISTRATION
+from app.utils.requests import SELECT_REGISTERED_COMPARISON, SELECT_REGISTERED_PROD
 
 
 class ProgramLoop():
@@ -7,21 +14,18 @@ class ProgramLoop():
     Program methods.
     """
 
-    # FONCTION RECHERCHE PAR CATEGORIE
-    # FONCTION RECHERCHE PRODUIT DANS LISTE
-    # FONCTION RECHERCHE TEXTUELLE
-    # RETOUR AU MENU PRINCIPAL
-    # HISTORIQUE DE RECHERCHE DES PRODUITS
-    # COMPARAISON AVEC AUTRE PRODUIT
-
-
     def __init__(self, db_connect):
         """Program initialization."""
 
-        # MESSAGE D'ACCUEIL PROGRAM LOOP
-
-        self.msgs = Statics.json_dict('./lib/resources/app_msg.json')
+        # Home message
+        self.msgs = Statics.json_dict('./app/utils/json/app_msg.json')
         self.connect = db_connect
+
+        # self attributes initialization
+        self.category_id = None
+        self.list_products = None
+        self.alternative = None
+        self.compared_product = None
 
         self.main_menu()
 
@@ -43,12 +47,12 @@ class ProgramLoop():
 
         elif user_choice == 1:
             self.search_select()
-        
+
         elif user_choice == 2:
             self.registered_menu()
 
         elif user_choice == 3:
-            exit()
+            sys.exit()
 
 
     def category_select(self):
@@ -65,7 +69,7 @@ class ProgramLoop():
 
         print(self.msgs['appMessages']['separator'])
         self.list_products, matching = self.text_search()
-        
+
         if matching:
             product = self.select_product(self.list_products)
             self.category_id = self.text_search_category(product)
@@ -129,10 +133,10 @@ class ProgramLoop():
         product = ProductGet(self.connect, code)
 
         return product
-    
+
     def select_comparison(self, list_codes, list_compared):
         """Select product in comparison list"""
-        
+
         print(self.msgs['appMessages']['separator'])
 
         list_of_products = self.connect.get_product_list(list_codes)
@@ -142,17 +146,17 @@ class ProgramLoop():
         if len(list_of_products) == len(list_of_compared_products):
             i = 0
             while i < len(list_of_products):
-                comparison = list_of_products[i] + ' / ' + list_of_compared_products[i] 
+                comparison = list_of_products[i] + ' / ' + list_of_compared_products[i]
                 list_comparison.append(comparison)
                 i += 1
-        
+
         comparison_choice = Statics.input_list(list_comparison)
 
         product_code = list_codes[comparison_choice]
         compared_code = list_compared[comparison_choice]
 
         product = ProductGet(self.connect, product_code)
-        compared_product = ProductGet(self.connect, compared_code)        
+        compared_product = ProductGet(self.connect, compared_code)
 
         return product, compared_product
 
@@ -163,7 +167,7 @@ class ProgramLoop():
         product_menu = []
         if not product_info:
             product_menu += self.msgs['appChoices']['productDetails']
-        
+
         product_menu += self.msgs['appChoices']['compareBetter']
         if not registered_product:
             product_menu += self.msgs['appChoices']['saveProduct']
@@ -186,7 +190,7 @@ class ProgramLoop():
         elif user_choice == 1:
             # Compare with better product
             self.alternative, self.compared_product = self.compare_with_better_product(product)
-        
+
         elif user_choice == 2:
             # Save
             self.save_product(product)
@@ -196,7 +200,7 @@ class ProgramLoop():
             self.main_menu()
         elif user_choice == 4:
             # Exit
-            exit()
+            sys.exit()
 
 
     def compare_with_better_product(self, product):
@@ -205,7 +209,7 @@ class ProgramLoop():
             - Search for products with better nutriscore
             - Show better products in list for user choice
             - Select a product
-            - Show result in table 
+            - Show result in table
         """
 
         # Selection of alternative product
@@ -244,10 +248,10 @@ class ProgramLoop():
             elif user_choice == 2:
                 # Return to main menu
                 self.main_menu()
-            
+
             elif user_choice == 3:
                 # Exit
-                exit()
+                sys.exit()
 
         else:
             print("\nThere no products better than selected one in db :\n")
@@ -270,10 +274,10 @@ class ProgramLoop():
             elif user_choice == 2:
                 # Return to main menu
                 self.main_menu()
-            
+
             elif user_choice == 3:
                 # Exit
-                exit()
+                sys.exit()
 
         return alternative, compared_product
 
@@ -284,34 +288,22 @@ class ProgramLoop():
 
         cursor = self.connect.mydb.cursor()
 
-        if compared_product == None:
+        if compared_product is None:
             compared_value = "NULL"
         else:
             compared_value = compared_product.code
 
-        registration_request = """
-        INSERT INTO
-            `registrations`
-            (
-                `product`,
-                `compared_product`
+        cursor.execute(
+            INSERT_REGISTRATION.format(
+                product.code,
+                compared_value
             )
-        VALUES
-            (
-                {},
-                {}
-            )
-        """.format(
-            product.code,
-            compared_value
         )
-
-        cursor.execute(registration_request)
         self.connect.mydb.commit()
 
+        print(self.msgs['appMessages']['separator'])
         print("WELL REGISTERED")
 
-        return
 
     def text_search(self):
         """Text search for matching products"""
@@ -322,24 +314,16 @@ class ProgramLoop():
 
         cursor = self.connect.mydb.cursor()
 
-        str_request = """
-        SELECT `code`, `name`
-        FROM `products`
-        WHERE
-            products.name LIKE "%{0}%"
-            OR products.brand LIKE "%{0}%"
-        """.format(user_text)
-
-        nb_products = cursor.execute(str_request)
+        nb_products = cursor.execute(
+            SELECT_PROD_TEXT.format(user_text)
+        )
 
         if nb_products > 0:
             list_codes = []
             for row in cursor:
                 list_codes.append(row[0])
-            
-            matching = True
 
-            return list_codes, matching
+            matching = True
 
         else:
             print("\nThere no products matching with : '", user_text, "'")
@@ -347,21 +331,17 @@ class ProgramLoop():
             list_codes = []
             matching = False
 
-            return list_codes, matching
+        return list_codes, matching
 
     def text_search_category(self, product):
         """Return category id to compare with better product.
         When select product by text search"""
 
-        str_request = """
-        SELECT `category_id`
-        FROM `cat_prod_connections`
-        WHERE `product_id` = "{}"
-        """.format(product.code)
-
         cursor = self.connect.mydb.cursor()
 
-        cursor.execute(str_request)
+        cursor.execute(
+            SELECT_CAT_BY_PROD.format(product.code)
+        )
 
         list_cat = []
         for row in cursor:
@@ -391,7 +371,7 @@ class ProgramLoop():
         elif user_choice == 2:
             self.main_menu()
         elif user_choice == 3:
-            exit()
+            sys.exit()
 
 
     def registered_products(self, comparison=False):
@@ -400,23 +380,13 @@ class ProgramLoop():
         cursor = self.connect.mydb.cursor()
 
         if comparison:
-            str_request = """
-            SELECT *
-            FROM `registrations`
-            WHERE
-                `compared_product` IS NOT NULL
-            """
-            str_compare = "comparison"
+            select_registration_request = SELECT_REGISTERED_COMPARISON
+            compared_item = "comparison"
         else:
-            str_request = """
-            SELECT *
-            FROM `registrations`
-            WHERE
-                `compared_product` IS NULL
-            """
-            str_compare = "product"
+            select_registration_request = SELECT_REGISTERED_PROD
+            compared_item = "product"
 
-        nb_products = cursor.execute(str_request)
+        nb_products = cursor.execute(select_registration_request)
 
         if nb_products > 0:
 
@@ -445,6 +415,6 @@ class ProgramLoop():
 
 
         else:
-            print('There is no {} registered in database'.format(str_compare))
+            print('There is no {} registered in database'.format(compared_item))
 
             self.registered_menu()

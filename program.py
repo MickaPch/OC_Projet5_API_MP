@@ -1,13 +1,16 @@
 #! /usr/bin/env python3
 # coding: utf-8
+"""Launch program"""
+import sys
 import argparse
 
-from classes.db_connect import Connection
-from classes.program_loop import ProgramLoop
+from app.classes.db_connect import Connection
+from app.classes.program_loop import ProgramLoop
 
 
 def parse_arguments():
     """Retrieve arguments passed in program launch."""
+
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -34,12 +37,13 @@ def main():
     args = parse_arguments()
 
     # On init : set the connection settings + connection test
+    # If --keep : Keep actual database
     connect = Connection(args.keep)
 
-    # If arg -i : Not execute the program loop
+    # If --import : Not execute the program loop
     if args.initdb:
         # Stop the program
-        exit()
+        sys.exit()
 
     else:
         # Execute the program loop

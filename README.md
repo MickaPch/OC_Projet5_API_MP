@@ -19,22 +19,26 @@ Où se procurer des aliments alternatifs plus sains ?
 * [Pré-requis](#pre_requis)
 * [Cahier des charges](#cahier_des_charges)
     * [Fonctionnalités du programme](#fonctionnalites)
-        * [Lien vers les user stories & fonctionnalités](./resources/user_stories.md)
+        * [Lien vers les user stories & fonctionnalités](./app/resources/doc/user_stories.md)
     * [Description du parcours utilisateur](#parcours_utilisateur)
 * [Documents annexes](#annexes)
 
 
 ## Application console : ***Yaka CHOISIR***
-![logo-yaka_choisir](./resources/img/logo-yaka_mini.png)
+![logo-yaka_choisir](./app/resources/img/logo-yaka_mini.png)
 
 
 ## <a name="pre_requis"></a>Pré-requis
 * Utilisation du programme en terminal
 * Environnement virtuel et installation des packages :
-    * venv <!-- lien vers requirements.txt -->
-    * pymysql
+    * python3
+    * pip
+    * venv  
+    `python3 -m venv /path/to/new/virtual/environment`
+    * Packages : [requirements.txt](./requirements.txt)  
+    `python3 -m pip install requirements.txt`
 * Base de données MySQL
-    * Création de la base de données MySQL **yaka_choisir**
+    * Paramètres par défaut dans [settings.py](./app/settings.py)
 
 
 ## <a name="cahier_des_charges"></a>Cahier des charges
@@ -43,7 +47,7 @@ Où se procurer des aliments alternatifs plus sains ?
 ### <a name="fonctionnalites"></a>Fonctionnalités du programme
 
 
-[Lien vers les user stories & fonctionnalités](./resources/user_stories.md)
+[Lien vers les user stories & fonctionnalités](./app/resources/doc/user_stories.md)
 * Recherche d'aliments dans la base Open Food Facts.
 * L'utilisateur interagit avec le programme dans le terminal.
 * Si l'utilisateur entre un caractère qui n'est pas un chiffre, le programme lui répète la question.
@@ -52,6 +56,11 @@ Où se procurer des aliments alternatifs plus sains ?
 
 
 ### <a name="parcours_utilisateur"></a>Description du parcours utilisateur
+
+
+* [Architecture des menus de l'application](./app/resources/doc/menu.txt)
+
+
 * L'utilisateur est sur le terminal et lance l'application *path_to_directory*/yaka_choisir.py
 
 

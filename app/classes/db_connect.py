@@ -1,11 +1,18 @@
+"""DB creation, importation and connection"""
+import sys
+
 import pymysql
 import requests
 from tqdm import tqdm
 
-from settings import HOST, USER, PWD, DATABASE, COUNTRY
+from app.settings import HOST, USER, PWD, DATABASE, COUNTRY
+from app.utils.requests import CREATE_DB, FK_CHECKS_0, FK_CHECKS_1, DROP_TABLE
+from app.utils.requests import SELECT_INIT_CAT, SELECT_CHILD_CAT, SELECT_CAT_BY_NAME
+from app.utils.requests import SELECT_PROD_BY_CAT, SELECT_PROD_BY_CODE
 
-from classes.product import ProductImportation
-from classes.utils import Statics
+
+from app.classes.product import ProductImportation
+from app.utils.methods import Statics
 
 
 
@@ -23,9 +30,9 @@ Test of connection and initalization of db.
 Create tables and import products.
 
 """
-        
+
         # Retrieve the app strings from JSON
-        self.strings = Statics.json_dict('./lib/resources/app_msg.json')
+        self.strings = Statics.json_dict('./app/utils/json/app_msg.json')
         input(self.strings['appMessages']['welcome'])
 
         # Retrieve default settings
@@ -51,10 +58,9 @@ Create tables and import products.
 
         # Else, stop the program
         elif not self.connection:
-            exit()
+            sys.exit()
 
 
-    @property
     def sep(self):
         """Separator attribute for terminal display"""
         print(self.strings['appMessages']['separator'])
@@ -67,19 +73,17 @@ Connect with default settings or ask user for choose others.
 """
 
         # Show default settings
-        self.sep
+        self.sep()
         print(self.strings['appMessages']['connection']['default'])
         for setting, value in settings.items():
             print(" -", setting, " : '" + value + "'")
         print(self.strings['appMessages']['connection']['confirmation'])
 
         # Ask user for keep or change default settings
-        user_choice = Statics.input_y_n(self.strings['appMessages']['connection']['changeSettings'])
+        user_choice = Statics.input_y_n(self.strings['appMessages']['inputYN'])
 
-        if user_choice:
-            return settings
-        else:
-            print(self.strings['appMessages']['db_connect5'])
+        if not user_choice:
+            print(self.strings['appMessages']['connection']['changeSettings'])
             for setting in settings.keys():
                 while True:
                     setting_value = input(setting + '  >>>  ')
@@ -87,12 +91,12 @@ Connect with default settings or ask user for choose others.
                     if val_setting:
                         settings[setting] = setting_value
                         break
-            
+
             print("New settings are :")
             for setting, value in settings.items():
                 print(" -", setting, " : '" + value + "'")
 
-            return settings
+        return settings
 
 
     def db_connection(self):
@@ -102,7 +106,7 @@ Create database if not exists.
 Default DB name is 'yaka'.
 """
 
-        self.sep
+        self.sep()
         print(self.strings['appMessages']['connection']['connectionMsg'])
         connection = False
         while not connection:
@@ -111,7 +115,7 @@ Default DB name is 'yaka'.
                 cursor = mydb.cursor()
                 connection = True
                 print("Connection OK")
-                self.sep
+                self.sep()
 
             # ID error / print error in terminal. Stop the program.
             except pymysql.err.DatabaseError as error:
@@ -136,10 +140,10 @@ Default DB name is 'yaka'.
                         connection = False
                     # User don't want to create the db
                     else:
-                        exit()
+                        sys.exit()
                 # Host, user or pwd is wrong
                 else:
-                    exit()
+                    sys.exit()
 
             # Unknown error. Stop the program.
             except:
@@ -154,54 +158,56 @@ Default DB name is 'yaka'.
         """Create database if not exists."""
 
         cursor.execute(
-            'CREATE DATABASE IF NOT EXISTS `{}`;'.format(
+            CREATE_DB.format(
                 self.settings_var['database']
             )
         )
 
 
-    def tables_creation(self, table_path="./lib/resources/tables.json"):
+    def tables_creation(self, table_path="./app/utils/json/tables.json"):
         """
 Check if tables exists and drop them.
 Creation of database with tables request strings."""
         print("CREATION OF TABLES\n")
 
+
         tables = Statics.json_dict(table_path)
 
         # Remove foreign key checks if drop is necessary
-        self.cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+        self.cursor.execute(FK_CHECKS_0)
 
         # Create all tables
+
         for table_name, fields_parameters in tables.items():
 
             # Drop table if exists
             try:
-                self.cursor.execute('''
-DROP TABLE {};'''.format(table_name)
+                self.cursor.execute(
+                    DROP_TABLE.format(table_name)
                 )
                 print('{} : Droped'.format(table_name))
             except:
                 print("{} : Not exists".format(table_name))
 
             # Create table
-            str_request = 'CREATE TABLE IF NOT EXISTS `{}` ('.format(
+            create_table_request = 'CREATE TABLE IF NOT EXISTS `{}` ('.format(
                 table_name
             )
 
-            # str_request : STRING FOR FIELD PARAMETERS
+            # create_table_request : STRING FOR FIELD PARAMETERS
             list_fk = []
             for field in fields_parameters:
                 # Foreign keys
                 if "fk" in field:
                     list_fk.append((field['field'], field['fk']['table'], field['fk']['field']))
-                
+
                 # DateField
                 if field['type'] == 'date':
-                    str_request += "`{}` DATE DEFAULT CURDATE(), ".format(
+                    create_table_request += "`{}` DATE DEFAULT CURDATE(), ".format(
                         field['field']
                     )
                 else: # INT or VARCHAR
-                    str_request += "`{}` {}({}) ".format(
+                    create_table_request += "`{}` {}({}) ".format(
                         field['field'],
                         field['type'],
                         field['len']
@@ -209,39 +215,39 @@ DROP TABLE {};'''.format(table_name)
 
                     # Default null or not
                     if field['null']:
-                        str_request += 'DEFAULT NULL'
+                        create_table_request += 'DEFAULT NULL'
                     else:
-                        str_request += 'NOT NULL'
+                        create_table_request += 'NOT NULL'
 
                     # SET primary key
                     if field['pk']:
-                        pk = field['field']
+                        primary_key = field['field']
 
                         # If PK is id --> AUTO_INCREMENT
                         # Not for product_code
                         if field['field'] == 'id':
-                            str_request += ' AUTO_INCREMENT'
-                    str_request += ', '
+                            create_table_request += ' AUTO_INCREMENT'
+                    create_table_request += ', '
 
-            str_request += 'PRIMARY KEY({})'.format(pk)
+            create_table_request += 'PRIMARY KEY({})'.format(primary_key)
 
             # Set Foreign keys
-            for fk in list_fk:
-                str_request += ', FOREIGN KEY (`{0}`) REFERENCES `{1}`(`{2}`)'.format(
-                    fk[0],
-                    fk[1],
-                    fk[2]
+            for foreign_key in list_fk:
+                create_table_request += ', FOREIGN KEY (`{0}`) REFERENCES `{1}`(`{2}`)'.format(
+                    foreign_key[0],
+                    foreign_key[1],
+                    foreign_key[2]
                 )
 
-            str_request += ');'
+            create_table_request += ');'
 
             # Execute request
-            self.cursor.execute(str_request)
+            self.cursor.execute(create_table_request)
             print('    {} created.'.format(table_name))
 
-        self.cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+        self.cursor.execute(FK_CHECKS_1)
         print('\n--> All tables are created and ready for import.')
-        self.sep
+        self.sep()
 
     def import_products(self, country=COUNTRY):
         """
@@ -274,7 +280,7 @@ Default country is France
 
         # 3. Search in each category for importable product
 
-        conditions = Statics.json_dict("./lib/resources/api_read.json")
+        conditions = Statics.json_dict("./app/utils/json/api_read.json")
         # CONDITIONS in API REQUEST :
         # load from JSON
             # categories contains "category"
@@ -303,10 +309,13 @@ Default country is France
                     self.mydb.commit()
 
         print('all products imported')
-            
 
     def url_request_category(self, conditions, category_name, country):
-        # REQUEST URL
+        """
+        Format URL request for retrieve products
+        by category name
+        and filtered by criterias
+        """
         request_url = "https://{}.openfoodfacts.org/cgi/search.pl?action=process".format(
             country
         )
@@ -365,53 +374,36 @@ Default parent_id = 'NULL'.
 """
         list_cat = []
         if parent_id == 'NULL':
-            cat_list_req = """
-SELECT `name`
-FROM `categories`
-WHERE `parent_id` IS NULL;
-"""
+            cat_list_req = SELECT_INIT_CAT
         else:
-            cat_list_req = """
-SELECT `name`
-FROM `categories`
-WHERE `parent_id`={};
-""".format(parent_id)
+            cat_list_req = SELECT_CHILD_CAT.format(parent_id)
         self.cursor.execute(cat_list_req)
         for row in self.cursor:
             list_cat.append(row[0])
-        
+
         return list_cat
-    
+
 
     def id_cat(self, category):
         """Return id of given category"""
-        cat_id_req = """
-SELECT `id`
-FROM `categories`
-WHERE `name`="{}";
-""".format(category)
-        self.cursor.execute(cat_id_req)
+        self.cursor.execute(
+            SELECT_CAT_BY_NAME.format(category)
+        )
+        id_cat = self.cursor.fetchone()[0]
 
-        row = self.cursor.fetchone()
-
-        id_cat = row[0]
-        
         return id_cat
 
     def list_products_by_cat(self, id_cat):
         """Return list of products code related to category id"""
-        product_list_req = """
-SELECT `product_id`
-FROM `cat_prod_connections`
-WHERE `category_id`={};
-""".format(id_cat)
         list_products = []
-        self.cursor.execute(product_list_req)
+        self.cursor.execute(
+            SELECT_PROD_BY_CAT.format(id_cat)
+        )
 
         for row in self.cursor:
             if row[0] not in list_products:
                 list_products.append(row[0])
-        
+
         return list_products
 
 
@@ -422,12 +414,9 @@ WHERE `category_id`={};
 
         for code in list_codes:
 
-            product_req = """
-    SELECT `name`, `brand`, `quantity`
-    FROM `products`
-    WHERE `code`="{}";
-    """.format(code)
-            self.cursor.execute(product_req)
+            self.cursor.execute(
+                SELECT_PROD_BY_CODE.format(code)
+            )
 
             row = self.cursor.fetchone()
             product_name = "{} - {} [{}]".format(
@@ -439,14 +428,3 @@ WHERE `category_id`={};
             list_of_products.append(product_name)
 
         return list_of_products
-
-
-
-#     def req_execute(self, str_req):
-#         '''str_req: string()
-# Execute the str_req SQL command.'''
-#         if self.connection:
-#             self.cursor.execute(str_req)
-#             return True
-#         else:
-#             return False

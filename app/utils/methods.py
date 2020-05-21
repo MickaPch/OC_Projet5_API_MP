@@ -1,3 +1,5 @@
+"""Program static methods"""
+import sys
 import json
 
 
@@ -16,7 +18,7 @@ class Statics():
         while True:
             choice = input(msg)
             if choice.lower() == "exit":
-                exit()
+                sys.exit()
             elif choice.upper() in ('Y', 'YES'):
                 choice = True
                 break
@@ -39,7 +41,7 @@ class Statics():
         while i < len(list_choices):
             dict_choices[i + 1] = list_choices[i]
             i += 1
-        
+
         list_number = sorted(dict_choices.keys())
 
         for i in list_number:
@@ -48,7 +50,7 @@ class Statics():
         while True:
             choice = input('\n>>> ')
             if choice.lower() == "exit":
-                exit()
+                sys.exit()
             try:
                 dict_choices[int(choice)]
                 break
@@ -67,5 +69,5 @@ class Statics():
             choice,
             dict_choices[int(choice)]
         ))
-            
+
         return int(choice) - 1
