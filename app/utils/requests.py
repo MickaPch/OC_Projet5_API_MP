@@ -34,7 +34,7 @@ WHERE `category_id`={};
 """
 
 SELECT_PROD_BY_CODE = """
-SELECT `name`, `brand`, `quantity`
+SELECT *
 FROM `products`
 WHERE `code`="{}";
 """

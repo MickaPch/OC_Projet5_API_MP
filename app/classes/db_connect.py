@@ -417,9 +417,9 @@ class Connection():
 
             row = self.cursor.fetchone()
             product_name = "{} - {} [{}]".format(
-                row[0],
                 row[1],
-                row[2]
+                row[4],
+                row[3]
             )
 
             list_of_products.append(product_name)
