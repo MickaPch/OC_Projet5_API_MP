@@ -56,7 +56,9 @@ class ProductImportation():
             'name': self.product['product_name'],
         }
 
-        product_infos = Statics.json_dict('./app/utils/json/product_infos.json')
+        product_infos = Statics.json_dict(
+            './app/utils/json/product_infos.json'
+        )
 
         for product_field, product_value_name in product_infos.items():
             if not isinstance(product_value_name, dict):
@@ -91,8 +93,11 @@ class ProductImportation():
 
 
     def categories(self, mydb):
-        """Check and create categories and its dependances in database.
-Create relation instance in db."""
+        """
+        Check and create categories
+        and its dependances in database.
+        Create relation instance in db.
+        """
         i = 0
         j = 5
         if j > len(self.list_cat):
@@ -114,8 +119,10 @@ class ProductGet():
     """
 
     def __init__(self, db_object, code):
-        """Initialization of ProductGet.
-Information retrieval."""
+        """
+        Initialization of ProductGet.
+        Information retrieval.
+        """
 
         cursor = db_object.cursor
 
@@ -151,8 +158,11 @@ Information retrieval."""
 
 
     def __repr__(self):
-        """Redefinition of __repr__ function to display product informations."""
-
+        """
+        Redefinition of __repr__ function
+        to display product informations by print()
+        when product is initialized.
+        """
 
         name = self.name + ' - ' + self.informations['brand']
 
@@ -186,7 +196,8 @@ Ingredients:    {ingredients}
         return product_infos
 
 
-    def init_tabulate(self):
+    @staticmethod
+    def init_tabulate():
         """Init tabulate lists"""
 
         headers = ["Products"]
@@ -210,7 +221,10 @@ Ingredients:    {ingredients}
         return headers, table
 
     def product_infos(self):
-        """Return list of product infos to add to tabulate lists."""
+        """
+        Return list of product infos
+        to add to tabulate lists.
+        """
 
         title = self.name + '\n(g for 100 g / ml for 100 ml)'
 
@@ -235,10 +249,11 @@ Ingredients:    {ingredients}
 
     def show_infos(self, compared_product=None):
         """
-Show detailed information with tabulate.
-If compared_product is given:
-    Compare product with product to compare.
-Show the table."""
+        Show detailed information with tabulate.
+        If compared_product is given:
+            Compare product with product to compare.
+        Show the table.
+        """
 
         headers, table = self.init_tabulate()
 
@@ -262,8 +277,9 @@ Show the table."""
 
     def get_alternative(self, category_id, db_object):
         """
-Return a list of alternative products.
-Compare products where have the same selected category."""
+        Return a list of alternative products.
+        Compare products where have the same selected category.
+        """
 
         cursor = db_object.mydb.cursor()
 

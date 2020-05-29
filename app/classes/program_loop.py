@@ -283,7 +283,9 @@ class ProgramLoop():
 
     def save_product(self, product, compared_product=None):
         """
-        Save the product and its compared better product if given into database.
+        Save the product
+        and its compared better product if given
+        into database.
         """
 
         cursor = self.connect.mydb.cursor()
@@ -334,8 +336,10 @@ class ProgramLoop():
         return list_codes, matching
 
     def text_search_category(self, product):
-        """Return category id to compare with better product.
-        When select product by text search"""
+        """
+        Return category id to compare with better product
+        when select product by text search
+        """
 
         cursor = self.connect.mydb.cursor()
 
@@ -375,7 +379,10 @@ class ProgramLoop():
 
 
     def registered_products(self, comparison=False):
-        """Show list of registered products stored in database"""
+        """
+        Show list of registered products
+        stored in database
+        """
 
         cursor = self.connect.mydb.cursor()
 
@@ -412,7 +419,6 @@ class ProgramLoop():
                     list_compared
                 )
                 product.show_infos(compared_product=compared_product)
-
 
         else:
             print('There is no {} registered in database'.format(compared_item))

@@ -21,15 +21,12 @@ class Connection():
 
     def __init__(self, keep):
         """
-Print connexion parameters for user validation.
-Input YES or NO.
-Modify if necessary.
-
-Test of connection and initalization of db.
-
-Create tables and import products.
-
-"""
+        Print connexion parameters for user validation.
+        Input YES or NO.
+        Modify if necessary.
+        Test of connection and initalization of db.
+        Create tables and import products.
+        """
 
         # Retrieve the app strings from JSON
         self.strings = Statics.json_dict('./app/utils/json/app_msg.json')
@@ -68,9 +65,9 @@ Create tables and import products.
 
     def set_settings(self, settings):
         """
-Connect with default settings or ask user for choose others.
-(host, user, password and database name)
-"""
+        Connect with default settings or ask user for choose others.
+        (host, user, password and database name)
+        """
 
         # Show default settings
         self.sep()
@@ -101,10 +98,10 @@ Connect with default settings or ask user for choose others.
 
     def db_connection(self):
         """
-Connect to MySQL.
-Create database if not exists.
-Default DB name is 'yaka'.
-"""
+        Connect to MySQL.
+        Create database if not exists.
+        Default DB name is 'yaka'.
+        """
 
         self.sep()
         print(self.strings['appMessages']['connection']['connectionMsg'])
@@ -166,8 +163,9 @@ Default DB name is 'yaka'.
 
     def tables_creation(self, table_path="./app/utils/json/tables.json"):
         """
-Check if tables exists and drop them.
-Creation of database with tables request strings."""
+        Check if tables exists and drop them.
+        Creation of database with tables request strings.
+        """
         print("CREATION OF TABLES\n")
 
 
@@ -251,14 +249,13 @@ Creation of database with tables request strings."""
 
     def import_products(self, country=COUNTRY):
         """
-Import products.
-Default country is France
-
-1. Read categories from {country}.openfoofacts.org/categories.json
-2. Select only categories where contains more than 2500 products.
-3. Search in this category with OpenFoodFacts API for importable products
-4. Import products with ProductImportation class
-"""
+        Import products.
+        Default country is France
+        1. Read categories from {country}.openfoofacts.org/categories.json
+        2. Select only categories where contains more than 2500 products.
+        3. Search in this category with OpenFoodFacts API for importable products
+        4. Import products with ProductImportation class
+        """
         # 1. GET all categories
         categories_url = "https://{}.openfoodfacts.org/categories.json".format(
             country
@@ -369,9 +366,9 @@ Default country is France
 
     def list_categories(self, parent_id='NULL'):
         """
-Get a list of categories from parent_id.
-Default parent_id = 'NULL'.
-"""
+        Get a list of categories from parent_id.
+        Default parent_id = 'NULL'.
+        """
         list_cat = []
         if parent_id == 'NULL':
             cat_list_req = SELECT_INIT_CAT

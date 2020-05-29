@@ -25,7 +25,10 @@ class Category():
 
 
     def check_import(self, mydb, category, index, list_categories):
-        """Check if category exists in db. Create or update parent_id line if necessary."""
+        """
+        Check if category exists in db.
+        Create or update parent_id line if necessary.
+        """
 
         if self.nb_lines == 0:
             nb_parent = self.cursor.execute(

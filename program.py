@@ -9,21 +9,31 @@ from app.classes.program_loop import ProgramLoop
 
 
 def parse_arguments():
-    """Retrieve arguments passed in program launch."""
+    """
+    Retrieve arguments given in program launch.
+    """
 
     parser = argparse.ArgumentParser()
+
+    # --keep and --import can't be used together
     group = parser.add_mutually_exclusive_group()
+
+    # -k / --keep
     group.add_argument(
         "-k",
         "--keep",
         help="""Keep database and skip database import.""",
         action="store_true"
     )
+
+    # -i / --import
     group.add_argument(
         "-i",
         "--initdb",
-        help="""Just do the database initialization.
-Do not execute the program""",
+        help="""
+        Just do the database initialization.
+        Do not execute the program
+        """,
         action="store_true"
     )
 
